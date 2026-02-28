@@ -1,0 +1,888 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>mitHub — The Operator's University</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&display=swap" rel="stylesheet"/>
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    :root{
+      --p1:#5B21FF;
+      --p2:#8100A2;
+      --g1:#00D865;
+      --o1:#FF8752;
+      --bg:#04040c;
+      --bg2:#070712;
+      --card:rgba(255,255,255,0.03);
+      --border:rgba(255,255,255,0.07);
+      --border-p:rgba(91,33,255,0.25);
+      --white:#fff;
+      --dim:rgba(255,255,255,0.5);
+      --dim2:rgba(255,255,255,0.3);
+    }
+    html{scroll-behavior:smooth}
+    body{font-family:'Poppins',sans-serif;background:var(--bg);color:var(--white);overflow-x:hidden;-webkit-font-smoothing:antialiased}
+
+    /* ── BACKGROUNDS ─────────────────────────────────────── */
+    #hills-canvas{position:fixed;inset:0;width:100%;height:100%;display:block;z-index:0;pointer-events:none}
+    .hills-fade{
+      position:fixed;inset:0;z-index:0;pointer-events:none;
+      background:
+        radial-gradient(ellipse 80% 60% at 20% 30%,rgba(91,33,255,0.07) 0%,transparent 70%),
+        radial-gradient(ellipse 60% 50% at 80% 70%,rgba(129,0,162,0.06) 0%,transparent 70%),
+        linear-gradient(to bottom,rgba(4,4,12,0) 0%,rgba(4,4,12,0.12) 50%,rgba(4,4,12,0.4) 100%);
+    }
+    .grain{position:fixed;inset:0;z-index:1;pointer-events:none;opacity:0.03;
+      background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
+    nav,section,footer,.band{position:relative;z-index:2}
+
+    /* ── NAV ─────────────────────────────────────────────── */
+    nav{
+      position:fixed;top:0;left:0;right:0;z-index:100;
+      display:flex;align-items:center;justify-content:space-between;
+      padding:0 60px;height:72px;
+      background:rgba(4,4,12,0.6);
+      backdrop-filter:blur(20px) saturate(180%);
+      border-bottom:1px solid rgba(255,255,255,0.05);
+      transition:background 0.3s;
+    }
+    nav.scrolled{background:rgba(4,4,12,0.94)}
+    .logo{font-size:1.5rem;font-weight:800;color:#fff;text-decoration:none;letter-spacing:-0.5px}
+    .logo span{
+      background:linear-gradient(135deg,var(--p1),var(--g1));
+      -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+    }
+    .nav-links{display:flex;align-items:center;gap:32px}
+    .nav-link{color:var(--dim);font-size:0.875rem;font-weight:500;text-decoration:none;transition:color 0.2s}
+    .nav-link:hover{color:#fff}
+
+    /* ── BUTTONS ─────────────────────────────────────────── */
+    .btn{
+      display:inline-flex;align-items:center;justify-content:center;gap:8px;
+      padding:13px 28px;border-radius:100px;
+      font-family:'Poppins',sans-serif;font-weight:700;font-size:0.875rem;
+      cursor:pointer;transition:all 0.25s;text-decoration:none;border:none;white-space:nowrap;
+    }
+    .btn-primary{background:linear-gradient(135deg,var(--p1),var(--p2));color:#fff;box-shadow:0 0 0 0 rgba(91,33,255,0.4)}
+    .btn-primary:hover{transform:translateY(-2px);box-shadow:0 8px 30px rgba(91,33,255,0.45)}
+    .btn-ghost{background:rgba(255,255,255,0.05);color:#fff;border:1px solid rgba(255,255,255,0.12)}
+    .btn-ghost:hover{background:rgba(255,255,255,0.09);transform:translateY(-2px)}
+    .btn-green{background:var(--g1);color:#000}
+    .btn-green:hover{background:#00f070;transform:translateY(-2px);box-shadow:0 8px 30px rgba(0,216,101,0.35)}
+    .btn-lg{padding:16px 44px;font-size:1rem}
+    .btn-xl{padding:20px 60px;font-size:1.1rem;border-radius:100px}
+
+    /* ── LAYOUT ──────────────────────────────────────────── */
+    .container{max-width:1100px;margin:0 auto}
+    section{padding:110px 24px}
+    .section-badge{
+      display:inline-flex;align-items:center;gap:8px;
+      font-size:0.72rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;
+      color:var(--p1);margin-bottom:20px;
+    }
+    .section-badge::before{content:'';width:20px;height:1.5px;background:var(--p1);border-radius:2px}
+    .section-title{font-size:clamp(2.2rem,4.5vw,3.8rem);font-weight:900;letter-spacing:-1.5px;line-height:1.05;margin-bottom:20px}
+    .section-sub{font-size:1.05rem;color:var(--dim);line-height:1.8;max-width:580px}
+    .grad-text{
+      background:linear-gradient(90deg,var(--p1),var(--g1));
+      -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+    }
+    .grad-text-warm{
+      background:linear-gradient(90deg,var(--p1),var(--o1));
+      -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+    }
+    hr.sep{border:none;height:1px;background:linear-gradient(90deg,transparent,var(--border-p),transparent);margin:0}
+
+    /* ── REVEAL ──────────────────────────────────────────── */
+    .r{opacity:0;transform:translateY(28px);transition:opacity 0.65s ease,transform 0.65s ease}
+    .r.up{opacity:1;transform:translateY(0)}
+    .r.d1{transition-delay:0.06s}.r.d2{transition-delay:0.13s}.r.d3{transition-delay:0.2s}.r.d4{transition-delay:0.28s}
+
+    /* ═══════════════════════════════════════════════════════
+       1 · HEADLINE — HERO
+    ═══════════════════════════════════════════════════════ */
+    .hero{
+      min-height:100vh;display:flex;flex-direction:column;
+      align-items:center;justify-content:center;
+      text-align:center;padding:140px 24px 100px;
+      position:relative;overflow:hidden;
+    }
+    #wave-canvas{position:absolute;inset:0;width:100%;height:100%;display:block;z-index:0}
+    .hero-overlay{
+      position:absolute;inset:0;z-index:1;pointer-events:none;
+      background:linear-gradient(to bottom,rgba(4,4,12,0.5) 0%,rgba(4,4,12,0.25) 40%,rgba(4,4,12,0.65) 85%,rgba(4,4,12,1) 100%);
+    }
+    .hero>*:not(#wave-canvas):not(.hero-overlay){position:relative;z-index:2}
+
+    .hero-eyebrow{
+      display:inline-flex;align-items:center;gap:10px;
+      background:rgba(91,33,255,0.1);border:1px solid rgba(91,33,255,0.3);
+      border-radius:100px;padding:8px 22px;
+      font-size:0.72rem;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;
+      color:rgba(167,139,255,0.9);margin-bottom:44px;
+    }
+    .eyebrow-dot{width:7px;height:7px;border-radius:50%;background:var(--g1);box-shadow:0 0 8px var(--g1);animation:dotPulse 2.5s ease-in-out infinite}
+    @keyframes dotPulse{0%,100%{opacity:1;box-shadow:0 0 8px var(--g1)}50%{opacity:0.4;box-shadow:0 0 3px var(--g1)}}
+
+    .hero-title{
+      font-size:clamp(3rem,7.5vw,7rem);font-weight:900;line-height:1.0;
+      letter-spacing:-3px;max-width:1000px;margin-bottom:0;
+    }
+    .hero-title .line2{
+      background:linear-gradient(90deg,var(--p1) 0%,var(--g1) 60%,var(--o1) 100%);
+      -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+    }
+    .hero-sub{
+      font-size:clamp(1rem,1.8vw,1.2rem);color:var(--dim);
+      font-weight:400;line-height:1.85;max-width:560px;
+      margin:28px auto 52px;
+    }
+    .hero-ctas{display:flex;gap:14px;flex-wrap:wrap;justify-content:center}
+
+    /* Time-gap stat */
+    .hero-gap{
+      display:flex;gap:0;margin-top:80px;
+      border:1px solid var(--border);border-radius:20px;
+      background:rgba(255,255,255,0.02);backdrop-filter:blur(10px);overflow:hidden;
+    }
+    .hgap-item{padding:28px 44px;text-align:center;flex:1;border-right:1px solid var(--border)}
+    .hgap-item:last-child{border-right:none}
+    .hgap-num{font-size:2.6rem;font-weight:900;letter-spacing:-1px;line-height:1}
+    .hgap-num.red{color:#ff4d6d}
+    .hgap-num.green{color:var(--g1)}
+    .hgap-label{font-size:0.75rem;color:var(--dim2);margin-top:7px;line-height:1.5}
+
+    .hero-scroll{
+      position:absolute;bottom:36px;left:50%;transform:translateX(-50%);
+      display:flex;flex-direction:column;align-items:center;gap:8px;
+      color:var(--dim2);font-size:0.7rem;letter-spacing:1.5px;text-transform:uppercase;
+      animation:scrollBounce 2s ease-in-out infinite;
+    }
+    .scroll-line{width:1px;height:40px;background:linear-gradient(to bottom,var(--p1),transparent)}
+    @keyframes scrollBounce{0%,100%{transform:translateX(-50%) translateY(0)}50%{transform:translateX(-50%) translateY(8px)}}
+
+    /* ═══════════════════════════════════════════════════════
+       2 · LEAD — SET THE STAGE
+    ═══════════════════════════════════════════════════════ */
+    .lead-sec{background:var(--bg2)}
+    .lead-scenario{
+      background:linear-gradient(145deg,rgba(91,33,255,0.07),rgba(0,0,0,0));
+      border:1px solid rgba(91,33,255,0.18);border-radius:28px;
+      padding:56px 64px;max-width:900px;margin:52px auto 0;
+      position:relative;overflow:hidden;
+    }
+    .lead-scenario::before{
+      content:'"';font-size:200px;font-weight:900;line-height:1;
+      position:absolute;top:-30px;left:32px;
+      color:rgba(91,33,255,0.08);font-family:'Poppins',sans-serif;
+    }
+    .lead-scenario p{
+      font-size:1.2rem;line-height:1.9;color:rgba(255,255,255,0.85);
+      position:relative;z-index:1;
+    }
+    .lead-scenario strong{color:#fff;font-weight:800}
+    .lead-scenario em{
+      font-style:normal;
+      background:linear-gradient(90deg,var(--p1),var(--g1));
+      -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+    }
+    .lead-questions{
+      display:grid;grid-template-columns:repeat(3,1fr);gap:20px;margin-top:52px;
+    }
+    .lead-q{
+      background:var(--card);border:1px solid var(--border);
+      border-radius:20px;padding:28px 24px;
+      transition:border-color 0.3s,transform 0.3s;
+    }
+    .lead-q:hover{border-color:rgba(91,33,255,0.35);transform:translateY(-6px)}
+    .lead-q-icon{font-size:1.8rem;margin-bottom:16px}
+    .lead-q p{font-size:0.9rem;color:var(--dim);line-height:1.7;font-style:italic}
+    .lead-q p strong{color:#fff;font-style:normal}
+
+    /* ═══════════════════════════════════════════════════════
+       3 · STORY — THE PROBLEM
+    ═══════════════════════════════════════════════════════ */
+    .story-sec{background:var(--bg)}
+    .story-grid{display:grid;grid-template-columns:1fr 1fr;gap:72px;align-items:center;margin-top:64px}
+    .story-visual{
+      background:linear-gradient(145deg,rgba(255,77,109,0.08),rgba(0,0,0,0));
+      border:1px solid rgba(255,77,109,0.15);border-radius:28px;
+      padding:52px 40px;text-align:center;position:relative;overflow:hidden;
+    }
+    .story-visual::before{
+      content:'';position:absolute;inset:0;
+      background:radial-gradient(ellipse at 50% 0%,rgba(255,77,109,0.1) 0%,transparent 65%);
+    }
+    .story-big{font-size:5rem;font-weight:900;line-height:1;letter-spacing:-2px;color:#ff4d6d;position:relative}
+    .story-big-label{font-size:1rem;font-weight:700;margin-top:8px}
+    .story-big-sub{font-size:0.85rem;color:var(--dim);margin-top:12px;line-height:1.7}
+
+    .story-points{display:flex;flex-direction:column;gap:24px}
+    .story-point{display:flex;align-items:flex-start;gap:18px;padding:24px;border-radius:18px;background:var(--card);border:1px solid var(--border);transition:border-color 0.3s}
+    .story-point:hover{border-color:rgba(91,33,255,0.3)}
+    .story-point-num{
+      min-width:40px;height:40px;border-radius:50%;
+      background:linear-gradient(135deg,var(--p1),var(--p2));
+      display:flex;align-items:center;justify-content:center;
+      font-size:0.8rem;font-weight:900;
+    }
+    .story-point h4{font-size:0.95rem;font-weight:700;margin-bottom:5px}
+    .story-point p{font-size:0.82rem;color:var(--dim);line-height:1.65}
+
+    /* ═══════════════════════════════════════════════════════
+       4 · PITCH — THE SOLUTION
+    ═══════════════════════════════════════════════════════ */
+    .pitch-sec{background:var(--bg2)}
+    .pitch-header{text-align:center;margin-bottom:64px}
+    .pitch-cards{display:grid;grid-template-columns:repeat(3,1fr);gap:24px}
+    .pitch-card{
+      background:var(--card);border:1px solid var(--border);
+      border-radius:24px;padding:36px 28px;
+      transition:border-color 0.3s,transform 0.3s;position:relative;overflow:hidden;
+    }
+    .pitch-card::before{content:'';position:absolute;inset:0;opacity:0;transition:opacity 0.3s;background:radial-gradient(ellipse at 50% 0%,rgba(91,33,255,0.1) 0%,transparent 60%)}
+    .pitch-card:hover{border-color:rgba(91,33,255,0.4);transform:translateY(-8px)}
+    .pitch-card:hover::before{opacity:1}
+    .pitch-card.featured{border-color:rgba(91,33,255,0.4);background:rgba(91,33,255,0.06)}
+    .pitch-step{font-size:0.68rem;font-weight:700;letter-spacing:2px;color:var(--p1);margin-bottom:20px}
+    .pitch-icon{font-size:2rem;margin-bottom:16px}
+    .pitch-card h3{font-size:1.15rem;font-weight:800;margin-bottom:10px}
+    .pitch-card p{font-size:0.85rem;color:var(--dim);line-height:1.7}
+    .pitch-arrow{display:flex;align-items:center;justify-content:center;color:rgba(91,33,255,0.3);font-size:2rem;padding:0 8px;margin-top:80px}
+
+    .pitch-differentiator{
+      margin-top:52px;padding:44px 56px;border-radius:24px;
+      background:linear-gradient(135deg,rgba(0,216,101,0.05),rgba(91,33,255,0.06));
+      border:1.5px solid rgba(0,216,101,0.18);
+      display:flex;align-items:center;gap:48px;
+    }
+    .pd-icon{font-size:3rem;min-width:60px}
+    .pd-content h3{font-size:1.2rem;font-weight:800;margin-bottom:8px}
+    .pd-content p{font-size:0.9rem;color:var(--dim);line-height:1.75}
+
+    /* ═══════════════════════════════════════════════════════
+       5 · EVIDENCE — PROOF
+    ═══════════════════════════════════════════════════════ */
+    .evidence-sec{background:var(--bg)}
+    .evidence-header{text-align:center;margin-bottom:64px}
+    .evidence-stats{
+      display:grid;grid-template-columns:repeat(4,1fr);gap:24px;margin-bottom:60px;
+    }
+    .ev-stat{
+      background:var(--card);border:1px solid var(--border);
+      border-radius:22px;padding:36px 28px;text-align:center;
+      transition:border-color 0.3s,transform 0.3s;
+    }
+    .ev-stat:hover{border-color:rgba(91,33,255,0.3);transform:translateY(-6px)}
+    .ev-num{
+      font-size:3rem;font-weight:900;letter-spacing:-1.5px;line-height:1;
+      background:linear-gradient(135deg,var(--p1),var(--g1));
+      -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+    }
+    .ev-label{font-size:0.8rem;color:var(--dim2);margin-top:8px;line-height:1.5}
+
+    .timeline-compare{
+      display:grid;grid-template-columns:1fr 1fr;gap:28px;
+    }
+    .timeline-card{border-radius:22px;padding:40px;position:relative;overflow:hidden}
+    .timeline-card.before{background:rgba(255,77,109,0.05);border:1px solid rgba(255,77,109,0.2)}
+    .timeline-card.after{background:rgba(0,216,101,0.05);border:1px solid rgba(0,216,101,0.2)}
+    .tc-label{font-size:0.7rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;margin-bottom:20px}
+    .tc-label.red{color:#ff4d6d}
+    .tc-label.green{color:var(--g1)}
+    .tc-steps{display:flex;flex-direction:column;gap:14px}
+    .tc-step{display:flex;align-items:center;gap:14px;font-size:0.875rem;color:var(--dim)}
+    .tc-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+    .tc-dot.red{background:#ff4d6d;box-shadow:0 0 6px #ff4d6d}
+    .tc-dot.green{background:var(--g1);box-shadow:0 0 6px var(--g1)}
+    .tc-time{
+      font-size:2.8rem;font-weight:900;letter-spacing:-1px;
+      position:absolute;top:36px;right:36px;line-height:1;
+    }
+    .tc-time.red{color:rgba(255,77,109,0.25)}
+    .tc-time.green{color:rgba(0,216,101,0.25)}
+
+    /* ═══════════════════════════════════════════════════════
+       6 · OFFER — THE PROGRAM
+    ═══════════════════════════════════════════════════════ */
+    .offer-sec{background:var(--bg2)}
+    .offer-header{text-align:center;margin-bottom:64px}
+    .offer-grid{display:grid;grid-template-columns:1fr 1fr;gap:28px;margin-bottom:48px}
+    .offer-item{
+      background:var(--card);border:1px solid var(--border);
+      border-radius:22px;padding:36px 32px;
+      display:flex;align-items:flex-start;gap:20px;
+      transition:border-color 0.3s,transform 0.3s;
+    }
+    .offer-item:hover{border-color:rgba(91,33,255,0.3);transform:translateY(-4px)}
+    .offer-item-num{
+      min-width:48px;height:48px;border-radius:14px;
+      background:linear-gradient(135deg,var(--p1),var(--p2));
+      display:flex;align-items:center;justify-content:center;
+      font-size:1.1rem;font-weight:900;
+    }
+    .offer-item h4{font-size:1rem;font-weight:700;margin-bottom:8px}
+    .offer-item p{font-size:0.83rem;color:var(--dim);line-height:1.7}
+
+    .offer-value-banner{
+      background:linear-gradient(135deg,rgba(91,33,255,0.1),rgba(0,216,101,0.05));
+      border:1.5px solid rgba(91,33,255,0.3);border-radius:24px;
+      padding:48px 56px;text-align:center;position:relative;overflow:hidden;
+    }
+    .offer-value-banner::before{
+      content:'';position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
+      width:600px;height:600px;border-radius:50%;
+      background:radial-gradient(circle,rgba(91,33,255,0.08) 0%,transparent 65%);
+    }
+    .ovb-title{font-size:1.05rem;color:var(--dim);margin-bottom:12px;position:relative}
+    .ovb-price{font-size:4rem;font-weight:900;letter-spacing:-2px;line-height:1;position:relative;color:#fff}
+    .ovb-note{font-size:0.82rem;color:var(--dim2);margin-top:8px;position:relative}
+
+    /* ═══════════════════════════════════════════════════════
+       7 · CLOSE — BOOK A MEETING
+    ═══════════════════════════════════════════════════════ */
+    .close-sec{
+      padding:140px 24px;text-align:center;position:relative;overflow:hidden;
+    }
+    .close-orb{
+      position:absolute;width:900px;height:900px;border-radius:50%;
+      background:radial-gradient(circle,rgba(91,33,255,0.14) 0%,transparent 70%);
+      top:50%;left:50%;transform:translate(-50%,-50%);
+      filter:blur(80px);pointer-events:none;
+    }
+    .close-sec h2{
+      font-size:clamp(2.5rem,6vw,5.5rem);font-weight:900;
+      letter-spacing:-2px;line-height:1.0;margin-bottom:20px;position:relative;
+    }
+    .close-sec>div>p{font-size:1.15rem;color:var(--dim);margin-bottom:16px;position:relative}
+    .close-sub-note{font-size:0.875rem;color:var(--dim2);margin-bottom:48px;position:relative}
+
+    /* Risk removers */
+    .risk-chips{display:flex;justify-content:center;gap:14px;flex-wrap:wrap;margin-top:44px;position:relative}
+    .risk-chip{
+      display:flex;align-items:center;gap:8px;
+      background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.09);
+      border-radius:100px;padding:11px 22px;
+      font-size:0.82rem;color:var(--dim);transition:all 0.25s;text-decoration:none;
+    }
+    .risk-chip:hover{border-color:var(--p1);color:#fff;background:rgba(91,33,255,0.1)}
+
+    /* ── FOOTER ───────────────────────────────────────────── */
+    footer{
+      border-top:1px solid var(--border);padding:36px 60px;
+      display:flex;justify-content:space-between;align-items:center;
+      flex-wrap:wrap;gap:16px;
+    }
+    footer p{font-size:0.78rem;color:var(--dim2)}
+
+    /* ── RESPONSIVE ──────────────────────────────────────── */
+    @media(max-width:900px){
+      nav{padding:0 24px}
+      .nav-link:not(:last-child){display:none}
+      .story-grid,.pitch-cards,.evidence-stats,.offer-grid,.timeline-compare,.lead-questions{grid-template-columns:1fr}
+      .pitch-arrow{display:none}
+      .hero-gap{flex-direction:column}
+      .hgap-item{border-right:none;border-bottom:1px solid var(--border)}
+      .hgap-item:last-child{border-bottom:none}
+      .pitch-differentiator{flex-direction:column;padding:36px 28px}
+      .lead-scenario{padding:36px 32px}
+      .offer-value-banner{padding:40px 28px}
+      footer{flex-direction:column;text-align:center}
+    }
+  </style>
+</head>
+<body>
+
+  <!-- BG -->
+  <canvas id="hills-canvas"></canvas>
+  <div class="hills-fade"></div>
+  <div class="grain"></div>
+
+  <!-- ─── NAV ─── -->
+  <nav id="nav">
+    <a href="#" class="logo">mit<span>Hub</span></a>
+    <div class="nav-links">
+      <a href="#story" class="nav-link">The Problem</a>
+      <a href="#pitch" class="nav-link">The Solution</a>
+      <a href="#offer" class="nav-link">The Program</a>
+      <a href="#close" class="btn btn-primary">Book a Meeting</a>
+    </div>
+  </nav>
+
+  <!-- ═══════════════════════════════════════════════════════
+       1 · HEADLINE
+  ═══════════════════════════════════════════════════════ -->
+  <section class="hero">
+    <canvas id="wave-canvas"></canvas>
+    <div class="hero-overlay"></div>
+
+    <div class="hero-eyebrow r">
+      <span class="eyebrow-dot"></span>
+      The university the world needed. Now exists.
+    </div>
+
+    <h1 class="hero-title r d1">
+      The talent already exists.<br/>
+      <span class="line2">It just needs the right bridge.</span>
+    </h1>
+
+    <p class="hero-sub r d2">
+      We know exactly how long it takes for the right talent to find<br/>
+      the right opportunity on their own. We cut that time in weeks.
+    </p>
+
+    <div class="hero-ctas r d3">
+      <a href="#close" class="btn btn-primary btn-lg">Book Your Strategy Session →</a>
+      <a href="#lead" class="btn btn-ghost btn-lg">See the Gap</a>
+    </div>
+
+    <!-- The time gap visual -->
+    <div class="hero-gap r d4">
+      <div class="hgap-item">
+        <div class="hgap-num red">8–18</div>
+        <div class="hgap-label">months for talent &amp;<br/>opportunity to meet alone</div>
+      </div>
+      <div class="hgap-item">
+        <div class="hgap-num" style="color:rgba(255,255,255,0.3)">→</div>
+        <div class="hgap-label">with<br/>mitHub</div>
+      </div>
+      <div class="hgap-item">
+        <div class="hgap-num green">6–10</div>
+        <div class="hgap-label">weeks. Same outcome.<br/>Fraction of the time.</div>
+      </div>
+      <div class="hgap-item">
+        <div class="hgap-num" style="background:linear-gradient(135deg,var(--p1),var(--g1));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text">1</div>
+        <div class="hgap-label">bridge.<br/>One university.</div>
+      </div>
+    </div>
+
+    <div class="hero-scroll">
+      <div class="scroll-line"></div>
+      scroll
+    </div>
+  </section>
+
+  <hr class="sep"/>
+
+  <!-- ═══════════════════════════════════════════════════════
+       2 · LEAD — SET THE STAGE
+  ═══════════════════════════════════════════════════════ -->
+  <section class="lead-sec" id="lead">
+    <div class="container">
+      <div class="r" style="text-align:center">
+        <span class="section-badge">The Stage</span>
+        <h2 class="section-title">You've seen this before.</h2>
+        <p class="section-sub" style="margin:0 auto">It plays out the same way in every growing company. And it costs more than anyone wants to admit.</p>
+      </div>
+
+      <div class="lead-scenario r">
+        <p>
+          You need someone who <strong>understands how AI works</strong>, can run automation systems,
+          knows how to close, and thinks like an operator — not just an employee.
+          You post a job. You interview for months. You hire someone who
+          <em>looks great on paper.</em> Six weeks in, they're lost in the tools.
+          And you're back to square one — with less time, less money, and less patience.
+        </p>
+      </div>
+
+      <div class="lead-questions">
+        <div class="lead-q r d1">
+          <div class="lead-q-icon">🧩</div>
+          <p><strong>What if the talent already exists</strong> — but they were never trained to operate the tools you're building with?</p>
+        </div>
+        <div class="lead-q r d2">
+          <div class="lead-q-icon">⏳</div>
+          <p><strong>What if you could know in advance</strong> how long it takes for the right person to find the right opportunity — and cut that time dramatically?</p>
+        </div>
+        <div class="lead-q r d3">
+          <div class="lead-q-icon">🎓</div>
+          <p><strong>What if there was a university</strong> that trained people for the world that already exists — not the one that existed 10 years ago?</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <hr class="sep"/>
+
+  <!-- ═══════════════════════════════════════════════════════
+       3 · STORY — THE PROBLEM
+  ═══════════════════════════════════════════════════════ -->
+  <section class="story-sec" id="story">
+    <div class="container">
+      <div class="r">
+        <span class="section-badge">The Problem</span>
+        <h2 class="section-title">Traditional education<br/>trains for a world <span class="grad-text-warm">that no longer exists.</span></h2>
+        <p class="section-sub">Technology moves faster than any curriculum. The gap between what operators need and what the market offers is measured in years — and in revenue lost.</p>
+      </div>
+
+      <div class="story-grid">
+        <div class="story-points">
+          <div class="story-point r d1">
+            <div class="story-point-num">01</div>
+            <div>
+              <h4>Talent without technology stagnates</h4>
+              <p>Brilliant people with no system around them can only grow so fast. Without the right tools, effort becomes the ceiling — not the floor.</p>
+            </div>
+          </div>
+          <div class="story-point r d2">
+            <div class="story-point-num">02</div>
+            <div>
+              <h4>Technology without humans creates chaos</h4>
+              <p>AI, automation, and systems without trained operators become expensive noise. The tool is only as powerful as the person running it.</p>
+            </div>
+          </div>
+          <div class="story-point r d3">
+            <div class="story-point-num">03</div>
+            <div>
+              <h4>The match takes too long alone</h4>
+              <p>Without a structured path, the right talent and the right opportunity find each other by accident — if they ever do. We've measured it. It averages 8 to 18 months.</p>
+            </div>
+          </div>
+          <div class="story-point r d4">
+            <div class="story-point-num">04</div>
+            <div>
+              <h4>Fear of technology is the real cost</h4>
+              <p>Most people don't lack ability. They lack the framework to approach technology with confidence. That fear costs businesses — and careers — every single day.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="story-visual r">
+          <div class="story-big">8–18</div>
+          <p class="story-big-label">months of lost time.</p>
+          <p class="story-big-sub">That's how long it takes, on average, for talent to find the right opportunity — and for companies to find the right person — without a structured bridge.</p>
+          <p style="margin-top:24px;font-size:0.72rem;color:var(--dim2)">mitHub exists to close this gap permanently.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <hr class="sep"/>
+
+  <!-- ═══════════════════════════════════════════════════════
+       4 · PITCH — THE SOLUTION
+  ═══════════════════════════════════════════════════════ -->
+  <section class="pitch-sec" id="pitch">
+    <div class="container">
+      <div class="pitch-header r">
+        <span class="section-badge">The Solution</span>
+        <h2 class="section-title">mitHub is not a recruiter.<br/>It's not a job board.<br/><span class="grad-text">It's a university.</span></h2>
+        <p class="section-sub" style="margin:0 auto">We train people to operate in the world that already exists. Then we facilitate the connection — because we know both sides.</p>
+      </div>
+
+      <div class="pitch-cards">
+        <div class="pitch-card r d1">
+          <div class="pitch-step">PHASE 01</div>
+          <div class="pitch-icon">🎓</div>
+          <h3>Train the genius</h3>
+          <p>We take talented people and give them the technology framework they were never taught. Not just tools — the operator mindset. The confidence to lead with AI instead of fear it.</p>
+        </div>
+
+        <div class="pitch-arrow r d2">→</div>
+
+        <div class="pitch-card featured r d2">
+          <div class="pitch-step">PHASE 02</div>
+          <div class="pitch-icon">🌉</div>
+          <h3>Build the bridge</h3>
+          <p>We know exactly how long it takes for talent and opportunity to find each other without us. Our ecosystem compresses that timeline from months to weeks — by design, not by luck.</p>
+        </div>
+
+        <div class="pitch-arrow r d3">→</div>
+
+        <div class="pitch-card r d3">
+          <div class="pitch-step">PHASE 03</div>
+          <div class="pitch-icon">⚙️</div>
+          <h3>Operate at full power</h3>
+          <p>Graduates don't just get opportunities. They get placed in environments where their technology skills are the asset — and they keep evolving. The education never stops.</p>
+        </div>
+      </div>
+
+      <div class="pitch-differentiator r">
+        <div class="pd-icon">🔑</div>
+        <div class="pd-content">
+          <h3>We don't earn from connecting. We earn from educating.</h3>
+          <p>Other platforms take a cut when talent meets opportunity. We believe that creates the wrong incentive. mitHub's model is built on education — which means our success is only possible when yours is real. We're not a bridge you pay to cross. We're the university that makes you ready for what's on the other side.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <hr class="sep"/>
+
+  <!-- ═══════════════════════════════════════════════════════
+       5 · EVIDENCE — PROOF
+  ═══════════════════════════════════════════════════════ -->
+  <section class="evidence-sec" id="evidence">
+    <div class="container">
+      <div class="evidence-header r">
+        <span class="section-badge">The Evidence</span>
+        <h2 class="section-title">The numbers don't negotiate.</h2>
+        <p class="section-sub" style="margin:0 auto">We've tracked the data. We know the gap. And we know exactly what it costs to leave it open.</p>
+      </div>
+
+      <div class="evidence-stats">
+        <div class="ev-stat r d1">
+          <div class="ev-num">8–18mo</div>
+          <p class="ev-label">Average time for talent &amp; opportunity to align — without a structured bridge</p>
+        </div>
+        <div class="ev-stat r d2">
+          <div class="ev-num">6–10wk</div>
+          <p class="ev-label">Average time within the mitHub ecosystem — same outcome, fraction of the wait</p>
+        </div>
+        <div class="ev-stat r d3">
+          <div class="ev-num">3×</div>
+          <p class="ev-label">Faster onboarding for companies that hire from the mitHub-trained ecosystem</p>
+        </div>
+        <div class="ev-stat r d4">
+          <div class="ev-num">100%</div>
+          <p class="ev-label">Education-first model. We earn when you grow — not when you get placed</p>
+        </div>
+      </div>
+
+      <div class="timeline-compare">
+        <div class="timeline-card before r d1">
+          <div class="tc-label red">Without mitHub</div>
+          <div class="tc-time red">18mo</div>
+          <div class="tc-steps">
+            <div class="tc-step"><span class="tc-dot red"></span>Search for talent in traditional platforms</div>
+            <div class="tc-step"><span class="tc-dot red"></span>Interview candidates not trained for modern tools</div>
+            <div class="tc-step"><span class="tc-dot red"></span>Hire someone who needs months of onboarding</div>
+            <div class="tc-step"><span class="tc-dot red"></span>Realize the gap 2 months in</div>
+            <div class="tc-step"><span class="tc-dot red"></span>Start over — cost: time, money, momentum</div>
+          </div>
+        </div>
+        <div class="timeline-card after r d2">
+          <div class="tc-label green">With mitHub</div>
+          <div class="tc-time green">10wk</div>
+          <div class="tc-steps">
+            <div class="tc-step"><span class="tc-dot green"></span>Talent enters the mitHub education program</div>
+            <div class="tc-step"><span class="tc-dot green"></span>6 weeks of operator-level technology training</div>
+            <div class="tc-step"><span class="tc-dot green"></span>Connected to pre-vetted opportunities in the ecosystem</div>
+            <div class="tc-step"><span class="tc-dot green"></span>Placed and operating from week one</div>
+            <div class="tc-step"><span class="tc-dot green"></span>Continues evolving through ongoing education</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <hr class="sep"/>
+
+  <!-- ═══════════════════════════════════════════════════════
+       6 · OFFER — THE PROGRAM
+  ═══════════════════════════════════════════════════════ -->
+  <section class="offer-sec" id="offer">
+    <div class="container">
+      <div class="offer-header r">
+        <span class="section-badge">The Offer</span>
+        <h2 class="section-title">The mitHub<br/><span class="grad-text">Operator Program.</span></h2>
+        <p class="section-sub" style="margin:0 auto">Everything you need to go from afraid of technology to operating it at an elite level — and connecting with the opportunities that match your new reality.</p>
+      </div>
+
+      <div class="offer-grid">
+        <div class="offer-item r d1">
+          <div class="offer-item-num">01</div>
+          <div>
+            <h4>Technology Mastery Curriculum</h4>
+            <p>Not just tools — the operator mindset. We teach AI, automation, CRM systems, and modern workflows through real-world application. You don't just learn; you build while you study.</p>
+          </div>
+        </div>
+        <div class="offer-item r d2">
+          <div class="offer-item-num">02</div>
+          <div>
+            <h4>Live Systems, Real Stakes</h4>
+            <p>Every concept is applied to actual business scenarios. No theoretical fluff. You leave with a system you've already run — not just knowledge you've read about.</p>
+          </div>
+        </div>
+        <div class="offer-item r d3">
+          <div class="offer-item-num">03</div>
+          <div>
+            <h4>The mitHub Ecosystem Network</h4>
+            <p>Access to companies and operators already building with the same tools. We know the timeline of how these connections form — and we accelerate it intentionally.</p>
+          </div>
+        </div>
+        <div class="offer-item r d4">
+          <div class="offer-item-num">04</div>
+          <div>
+            <h4>Lifetime Education Access</h4>
+            <p>Technology evolves. Your education should too. Graduates maintain access to updated materials, new modules, and the mitHub community — permanently.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="offer-value-banner r">
+        <p class="ovb-title">Investment in your program</p>
+        <div class="ovb-price">Custom · By scope</div>
+        <p class="ovb-note">Book a 30-minute session → We build your path together → No pressure, no pitch</p>
+        <a href="#close" class="btn btn-primary btn-lg" style="margin-top:28px;position:relative">Book My Session →</a>
+      </div>
+    </div>
+  </section>
+
+  <hr class="sep"/>
+
+  <!-- ═══════════════════════════════════════════════════════
+       7 · CLOSE — BOOK THE MEETING
+  ═══════════════════════════════════════════════════════ -->
+  <section class="close-sec" id="close">
+    <div class="close-orb"></div>
+    <div class="container">
+      <div class="r">
+        <h2>
+          Your genius is ready.<br/>
+          <span class="grad-text">Is your system?</span>
+        </h2>
+        <p>One conversation. We show you exactly where you are, where you need to be, and the fastest path between them.</p>
+        <p class="close-sub-note">30 minutes. No sales pitch. Just a map.</p>
+
+        <a href="#" class="btn btn-primary btn-xl" style="font-size:1.15rem">
+          Book a Strategy Meeting →
+        </a>
+
+        <div class="risk-chips">
+          <a href="tel:+17869402394" class="risk-chip">📞 +1 (786) 940 2394</a>
+          <a href="mailto:contact@mithub.club" class="risk-chip">✉️ contact@mithub.club</a>
+          <a href="https://mithub.club" target="_blank" class="risk-chip">🌐 mithub.club</a>
+          <span class="risk-chip">✓ No commitment required</span>
+          <span class="risk-chip">✓ 30-minute session</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── FOOTER ─── -->
+  <footer>
+    <a href="#" class="logo" style="font-size:1.4rem">mit<span>Hub</span></a>
+    <p>© 2026 mitHub · The Operator's University · mithub.club</p>
+    <p>Part of the <a href="https://mithub.club" style="color:var(--dim2);text-decoration:none">mitHub</a> ecosystem</p>
+  </footer>
+
+  <!-- ─── SCRIPTS ────────────────────────────────────────── -->
+  <script>
+    // Scroll reveal
+    const obs = new IntersectionObserver(entries => {
+      entries.forEach((e, i) => {
+        if (e.isIntersecting) {
+          setTimeout(() => e.target.classList.add('up'), i * 60);
+          obs.unobserve(e.target);
+        }
+      });
+    }, { threshold: 0.07, rootMargin: '0px 0px -30px 0px' });
+    document.querySelectorAll('.r').forEach(el => obs.observe(el));
+
+    // Hero triggers immediately
+    document.querySelectorAll('.hero .r').forEach((el, i) => {
+      setTimeout(() => el.classList.add('up'), 200 + i * 130);
+    });
+
+    // Nav scroll
+    const nav = document.getElementById('nav');
+    window.addEventListener('scroll', () => {
+      nav.classList.toggle('scrolled', window.scrollY > 60);
+    }, { passive: true });
+  </script>
+
+  <!-- ─── WAVE CANVAS ────────────────────────────────────── -->
+  <script>
+  (function initWaveCanvas() {
+    const canvas = document.getElementById('wave-canvas');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    let W = 0, H = 0, frame = 0;
+    function resize() { W = canvas.width = canvas.offsetWidth; H = canvas.height = canvas.offsetHeight; }
+    const LAYERS = [
+      { speed:0.006, fx:0.0070, amp:0.20, ph:0.0,  r:91,  g:33,  b:255, a:0.22 },
+      { speed:0.004, fx:0.0105, amp:0.15, ph:1.4,  r:0,   g:216, b:101, a:0.10 },
+      { speed:0.008, fx:0.0050, amp:0.13, ph:2.8,  r:91,  g:33,  b:255, a:0.09 },
+      { speed:0.003, fx:0.0130, amp:0.18, ph:4.2,  r:129, g:0,   b:162, a:0.07 },
+    ];
+    function drawLayer(L, t) {
+      ctx.beginPath();
+      for (let x = 0; x <= W + 2; x += 4) {
+        const p = x * L.fx + t * L.speed + L.ph;
+        const wave = Math.sin(p) + Math.sin(p * 2.1 - t * L.speed * 1.3) * 0.45 + Math.sin(p * 3.6 + t * L.speed * 0.8) * 0.22;
+        const y = H * (0.5 + L.amp * wave * 0.5);
+        x === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+      }
+      ctx.lineTo(W, H); ctx.lineTo(0, H); ctx.closePath();
+      ctx.fillStyle = `rgba(${L.r},${L.g},${L.b},${L.a})`;
+      ctx.fill();
+    }
+    function drawGlows(t) {
+      const x1 = W * (0.25 + Math.sin(t * 0.0007) * 0.1), y1 = H * (0.4 + Math.cos(t * 0.0005) * 0.12);
+      const g1 = ctx.createRadialGradient(x1, y1, 0, x1, y1, W * 0.42);
+      g1.addColorStop(0, 'rgba(91,33,255,0.20)'); g1.addColorStop(1, 'transparent');
+      ctx.fillStyle = g1; ctx.fillRect(0, 0, W, H);
+      const x2 = W * (0.75 + Math.cos(t * 0.0006) * 0.08), y2 = H * (0.55 - Math.sin(t * 0.0008) * 0.1);
+      const g2 = ctx.createRadialGradient(x2, y2, 0, x2, y2, W * 0.32);
+      g2.addColorStop(0, 'rgba(0,216,101,0.12)'); g2.addColorStop(1, 'transparent');
+      ctx.fillStyle = g2; ctx.fillRect(0, 0, W, H);
+    }
+    function draw() {
+      frame++;
+      ctx.clearRect(0, 0, W, H);
+      ctx.fillStyle = '#04040c'; ctx.fillRect(0, 0, W, H);
+      drawGlows(frame);
+      LAYERS.forEach(L => drawLayer(L, frame));
+      requestAnimationFrame(draw);
+    }
+    function init() { resize(); window.addEventListener('resize', resize, { passive: true }); draw(); }
+    document.readyState !== 'loading' ? init() : document.addEventListener('DOMContentLoaded', init);
+  })();
+  </script>
+
+  <!-- ─── THREE.JS ───────────────────────────────────────── -->
+  <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
+
+  <!-- ─── GLSL HILLS ────────────────────────────────────── -->
+  <script>
+  (function initGLSLHills() {
+    if (!window.THREE) return;
+    const THREE = window.THREE;
+    const canvas = document.getElementById('hills-canvas');
+    if (!canvas) return;
+    const renderer = new THREE.WebGLRenderer({ canvas, antialias: false, alpha: false });
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.setPixelRatio(Math.min(devicePixelRatio, 1.25));
+    const scene = new THREE.Scene();
+    const camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
+    const vert = `void main() { gl_Position = vec4(position.xy, 0.0, 1.0); }`;
+    const frag = `
+      precision mediump float;
+      uniform float uTime; uniform vec2 uRes;
+      float hash(vec2 p){p=fract(p*vec2(234.34,435.34));p+=dot(p,p+34.23);return fract(p.x*p.y);}
+      float noise(vec2 p){vec2 i=floor(p),f=fract(p);f=f*f*(3.0-2.0*f);return mix(mix(hash(i),hash(i+vec2(1,0)),f.x),mix(hash(i+vec2(0,1)),hash(i+vec2(1,1)),f.x),f.y);}
+      float fbm(vec2 p){float v=0.0,a=0.5;for(int i=0;i<4;i++){v+=a*noise(p);p=p*2.01+vec2(1.7,9.2);a*=0.5;}return v;}
+      void main(){
+        vec2 uv=gl_FragCoord.xy/uRes; float t=uTime*0.09;
+        vec3 col=vec3(0.016,0.016,0.047);
+        float h1=fbm(uv*vec2(2.6,2.8)+vec2(t*0.35,0.1));
+        float h2=fbm(uv*vec2(3.1,2.0)+vec2(-t*0.28,0.6));
+        float h3=fbm(uv*vec2(1.9,3.6)+vec2(t*0.20,1.2));
+        float hill1=smoothstep(-0.018,0.018,uv.y-(0.48+h1*0.27));
+        float hill2=smoothstep(-0.018,0.018,uv.y-(0.58+h2*0.22));
+        float hill3=smoothstep(-0.018,0.018,uv.y-(0.68+h3*0.17));
+        vec3 purple=vec3(0.357,0.129,1.0),deep=vec3(0.502,0.0,0.635),green=vec3(0.0,0.847,0.396);
+        col+=purple*hill3*0.16; col+=deep*hill2*0.13; col+=purple*hill1*0.09;
+        float dist=length(uv-vec2(0.5,0.35));
+        col+=green*max(0.0,0.10-dist*0.22);
+        col+=purple*max(0.0,0.12-dist*0.25);
+        vec2 vq=uv*2.0-1.0; float vig=1.0-dot(vq*0.55,vq*0.55);
+        col*=max(0.2,vig);
+        gl_FragColor=vec4(col,1.0);
+      }
+    `;
+    const mat = new THREE.ShaderMaterial({ vertexShader:vert, fragmentShader:frag, uniforms:{ uTime:{value:0}, uRes:{value:new THREE.Vector2(window.innerWidth,window.innerHeight)} } });
+    scene.add(new THREE.Mesh(new THREE.PlaneGeometry(2,2), mat));
+    const t0=Date.now(); let lastFrame=0; const FPS=1000/30;
+    function render(now){ requestAnimationFrame(render); if(now-lastFrame<FPS)return; lastFrame=now; mat.uniforms.uTime.value=(Date.now()-t0)*0.001; renderer.render(scene,camera); }
+    window.addEventListener('resize',()=>{ renderer.setSize(window.innerWidth,window.innerHeight); mat.uniforms.uRes.value.set(window.innerWidth,window.innerHeight); },{passive:true});
+    requestAnimationFrame(render);
+  })();
+  </script>
+
+</body>
+</html>
